@@ -1,0 +1,234 @@
+<div class="fade-in-section">
+  <!-- Search & Navigation Header -->
+  <div class="challenges-top-header">
+    <div class="title-meta">
+      <h1>Challenges & Rewards</h1>
+      <p class="subtitle text-secondary">Engage with your community and earn badges for sustainable actions.</p>
+    </div>
+
+    <div class="header-search-bar hide-on-mobile">
+      <div class="search-input-wrapper">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Search challenges or categories..." aria-label="Search challenges or categories"
+          [(ngModel)]="searchQuery" />
+      </div>
+      <button class="nav-bell-btn"><i class="bi bi-bell"></i></button>
+      <button class="calculate-impact-glass-btn" (click)="navigateToCalculator()">
+        <i class="bi bi-calculator"></i> Calculate Impact
+      </button>
+    </div>
+  </div>
+
+  <div class="challenges-layout-grid">
+    <!-- Main Content Area: Recommended Challenges -->
+    <div class="challenges-main-area">
+      <!-- Active Challenge Banner Cards (Parallel Layout - Max 2) -->
+      <div class="active-challenges-container" 
+           *ngIf="activeChallenges.length > 0"
+           [class.single-active]="activeChallenges.length === 1"
+           [class.double-active]="activeChallenges.length === 2">
+        <div class="active-challenge-card glass-card" *ngFor="let item of activeChallenges.slice(0, 2)">
+          <div class="active-card-top-row">
+            <div class="card-status-badge"><span class="pulse-active"></span> ACTIVE NOW</div>
+            <button class="btn-leave-sm" (click)="onLeaveChallenge(item.id)" title="Leave this challenge">
+              <i class="bi bi-x-circle"></i> Leave
+            </button>
+          </div>
+          <div class="challenge-title-area">
+            <h2>{{ item.title }}</h2>
+            <span class="days-left-tag">Active</span>
+          </div>
+
+          <div class="progress-details">
+            <span class="progress-label">Current Progress</span>
+            <span class="progress-pct">{{ item.currentProgress | number:'1.0-0' }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="item.currentProgress"></div>
+          </div>
+
+          <div class="avatar-group-row">
+            <div class="avatar-group">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=60&auto=format&fit=crop"
+                class="avatar-sm" alt="Friend" />
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=60&auto=format&fit=crop"
+                class="avatar-sm" alt="Friend" />
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=60&auto=format&fit=crop"
+                class="avatar-sm" alt="Friend" />
+              <div class="avatar-sm-more">+42</div>
+            </div>
+            <span class="friends-participating">Friends also participating</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Limit Info Banner -->
+      <div class="limit-alert-banner" *ngIf="isMaxActiveLimitReached">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>Maximum limit reached: You can have at most 2 active challenges at the same time. Leave an active challenge to join another.</span>
+      </div>
+
+      <!-- Recommended Section Header -->
+      <div class="section-header">
+        <h3>Recommended Challenges</h3>
+        <p class="font-sm text-secondary">Based on your sustainability interests and local impact.</p>
+      </div>
+
+      <!-- Recommended Grid -->
+      <div class="recommended-grid stagger-item">
+        <div class="eco-card ch-card ch-card-hover" *ngFor="let ch of filteredChallenges">
+          <div class="ch-image-wrapper">
+            <img [src]="ch.imageUrl || ch.image || '/uploads/cycle-to-work.jpg'" [alt]="ch.title" class="ch-img" />
+            <span class="xp-badge">+{{ ch.rewardPoints || 100 }} XP</span>
+          </div>
+
+          <div class="ch-body">
+            <div class="ch-tags">
+              <span class="tag" *ngIf="ch.category">{{ ch.category }}</span>
+              <span class="tag" *ngFor="let t of ch.tags">{{ t }}</span>
+            </div>
+            <h4>{{ ch.title }}</h4>
+            <p class="ch-desc">{{ ch.description }}</p>
+          </div>
+
+          <div class="ch-footer">
+            <span class="joined-count"><i class="bi bi-people"></i> {{ ch.joinedCount || '40+ joined' }}</span>
+            <button (click)="onJoinChallenge(ch.id)"
+                    class="btn-join-link"
+                    [disabled]="isMaxActiveLimitReached"
+                    [class.btn-disabled]="isMaxActiveLimitReached"
+                    [title]="isMaxActiveLimitReached ? 'Max 2 active challenges reached' : 'Join Challenge'">
+              {{ isMaxActiveLimitReached ? 'Limit Reached' : 'Join Challenge' }} &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Empty State -->
+      <div class="search-empty" *ngIf="filteredChallenges.length === 0">
+        <i class="bi bi-search"></i>
+        <p>No challenges match "{{ searchQuery }}". Try a different keyword.</p>
+      </div>
+    </div>
+
+    <!-- Side Widgets (Leaderboard, Badges) -->
+    <div class="challenges-side-area">
+      <!-- Gaming Leaderboard Card -->
+      <div class="eco-card side-widget-card">
+        <div class="widget-header">
+          <h3>Leaderboard</h3>
+          <i class="bi bi-trophy text-warning"></i>
+        </div>
+        <div class="leaderboard-list stagger-item">
+          <div class="leader-item" [class]="'leader-item rank-' + (i + 1)"
+            *ngFor="let user of leaderboard; let i = index">
+            <div class="leader-left">
+              <span class="leader-rank">
+                <i class="bi" [ngClass]="getRankIcon(i + 1)"></i>
+              </span>
+              <div class="leader-avatar-placeholder"></div>
+              <span class="leader-name">{{ user.username }}</span>
+            </div>
+            <span class="leader-points">{{ user.totalXp }} pts</span>
+          </div>
+          <p class="leaderboard-empty" *ngIf="leaderboard.length === 0">
+            No ranked explorers yet. Log your carbon activities to claim rank #1!
+          </p>
+        </div>
+        <button class="btn btn-text leaderboard-ghost-btn">
+          <i class="bi bi-people"></i> View Full Leaderboard
+        </button>
+      </div>
+
+      <!-- Badges Showcase -->
+      <div class="eco-card side-widget-card">
+        <div class="widget-header">
+          <h3>Latest Badges</h3>
+          <button type="button" (click)="isBadgeModalOpen = true" class="badge-rules-btn"
+            title="View Badge Rules & Tiers">
+            <i class="bi bi-info-circle"></i>
+            <span>Rules</span>
+          </button>
+        </div>
+        <div class="badge-grid badge-showcase-grid">
+          <div class="badge-card"
+               *ngFor="let badge of allBadges"
+               [ngClass]="isBadgeUnlocked(badge.code) ? getBadgeTierClass(ecoProfile?.currentLevel || 1) : 'badge-locked'"
+               [title]="badge.condition">
+            <span class="badge-lock-icon" *ngIf="!isBadgeUnlocked(badge.code)">
+              <i class="bi bi-lock-fill"></i>
+            </span>
+            <span class="badge-status-tag" *ngIf="isBadgeUnlocked(badge.code)">
+              <i class="bi bi-check2"></i> Unlocked
+            </span>
+            <i class="bi" [ngClass]="badge.icon" style="font-size: 1.75rem;"></i>
+            <span class="mt-2 font-sm fw-bold badge-name">{{ badge.name }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="fab-btn" title="Log Carbon Activity" (click)="onFabClick()"><i class="bi bi-plus-lg"></i></button>
+
+  <!-- Badge Progression Modal -->
+  <div class="modal-overlay" *ngIf="isBadgeModalOpen" (click)="isBadgeModalOpen = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Badge Progression Guide</h3>
+        <button class="modal-close" (click)="isBadgeModalOpen = false" aria-label="Close modal">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tier System Section -->
+        <section class="tier-section">
+          <h4 class="section-title">Rarity Tier System</h4>
+          <p class="section-desc">Badges upgrade their material based on your overall Level</p>
+
+          <div class="tier-grid">
+            <div class="tier-card" *ngFor="let tier of badgeTiers" [style.--tier-color]="tier.color"
+              [style.--tier-glow]="tier.glow">
+              <div class="tier-badge" [style.background]="tier.color" [style.box-shadow]="'0 0 12px ' + tier.glow">
+                <span class="tier-level">{{ tier.level }}</span>
+              </div>
+              <div class="tier-name">{{ tier.name }}</div>
+              <div class="tier-level-label">Level {{ tier.level }}{{ tier.level === 5 ? '+' : '' }}</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- Badge Unlock Criteria Section -->
+        <section class="criteria-section">
+          <h4 class="section-title">Badge Unlock Criteria</h4>
+          <p class="section-desc">Complete these challenges to earn your badges</p>
+
+          <div class="criteria-list">
+            <div class="criteria-item" *ngFor="let criteria of badgeUnlockCriteria">
+              <div class="criteria-icon"
+                [style.background]="isBadgeUnlocked(criteria.badge) ? 'linear-gradient(135deg, var(--color-primary), #06B6D4)' : 'var(--color-background)'">
+                <i class="bi" [ngClass]="criteria.icon"
+                  [style.color]="isBadgeUnlocked(criteria.badge) ? '#fff' : 'var(--color-text-muted)'"></i>
+              </div>
+              <div class="criteria-info">
+                <div class="criteria-name">{{ criteria.name }}</div>
+                <div class="criteria-requirement">{{ criteria.requirement }}</div>
+              </div>
+              <div class="criteria-xp" [class.unlocked]="isBadgeUnlocked(criteria.badge)">
+                <i class="bi bi-star-fill"></i>
+                <span>{{ criteria.xp }} XP</span>
+              </div>
+              <div class="criteria-status" *ngIf="isBadgeUnlocked(criteria.badge)">
+                <i class="bi bi-check-circle-fill"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

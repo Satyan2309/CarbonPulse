@@ -1,0 +1,48 @@
+# Backend Build Output & Dependencies
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Frontend Dependencies & Build Output
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.angular/
+.gemini/
+
+# Environment Files & Local Secrets
+.env
+*.env
+backend/.env
+frontend/.env
+backend/src/main/resources/application-local.properties
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.iws
+*.iml
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache/
+
+# General Generated Files & Logs
+*.class
+*.log
+*.ctxt
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# System Noise
+.DS_Store
+Thumbs.db

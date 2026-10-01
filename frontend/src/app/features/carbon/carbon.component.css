@@ -1,0 +1,399 @@
+/* Carbon Footprint Calculator CSS */
+
+.carbon-header {
+  margin-bottom: 28px;
+}
+
+.calculator-layout-grid {
+  display: grid;
+  grid-template-cols: 1.2fr 1fr;
+  gap: 24px;
+}
+
+/* Calculator Card */
+.calc-card {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.calc-tabs {
+  display: flex;
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.calc-tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-right: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.calc-tabs button:last-child {
+  border-right: none;
+}
+
+.calc-tabs button:hover {
+  background: var(--color-hover-overlay);
+  color: var(--color-text-primary);
+}
+
+.calc-tabs button.active {
+  background: var(--color-card);
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.calc-form {
+  padding: 32px;
+  flex: 1;
+}
+
+.form-group-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-item label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.form-item select, .form-item input[type='number'] {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-item select:focus, .form-item input[type='number']:focus {
+  border-color: var(--color-primary);
+}
+
+.form-item input[type='range'] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 5px;
+  outline: none;
+  margin: 12px 0;
+}
+
+.form-item input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(var(--color-primary-rgb), 0.3);
+  transition: transform 0.1s ease;
+}
+
+.form-item input[type='range']::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.range-display {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  align-self: flex-end;
+}
+
+/* Result Panel at Bottom */
+.calc-result-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  background: rgba(var(--color-primary-rgb), 0.04);
+  border-top: 1px solid var(--color-border);
+}
+
+.result-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.result-number {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin-top: 4px;
+}
+
+.result-unit {
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.log-activity-btn {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%) !important;
+  color: var(--color-text-primary) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 10px 24px !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  box-shadow: 0 4px 15px rgba(var(--color-primary-rgb), 0.3) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.log-activity-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(var(--color-primary-rgb), 0.45) !important;
+}
+
+.log-activity-btn:disabled {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* XP Preview Badge */
+.xp-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 12px;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #F59E0B 100%);
+  background-size: 200% 200%;
+  color: var(--color-card);
+  font-weight: 800;
+  font-size: 0.8rem;
+  border-radius: 9999px;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 2px 8px rgba(var(--color-warning-rgb), 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+  animation: xp-pulse 2s ease-in-out infinite, xp-shimmer 3s ease-in-out infinite;
+  white-space: nowrap;
+  transform-origin: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.xp-preview-badge:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 4px 16px rgba(var(--color-warning-rgb), 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes xp-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes xp-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.result-number {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Activity XP Badge */
+.xp-badge-mini {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 9999px;
+  box-shadow: 0 0 10px rgba(var(--color-warning-rgb), 0.35);
+  letter-spacing: 0.025em;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+/* History Card */
+.history-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.badge-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.08);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 480px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.history-item:hover {
+  border-color: var(--color-border-hover);
+  transform: translateX(2px);
+}
+
+.history-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.history-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.transport-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.energy-icon { background: rgba(var(--color-warning-rgb), 0.1); color: var(--color-warning); }
+.food-icon { background: rgba(var(--color-primary-rgb), 0.1); color: var(--color-success); }
+.waste-icon { background: rgba(var(--color-error-rgb), 0.1); color: var(--color-error); }
+
+.history-desc-text {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+.history-date {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+.history-emissions {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--color-error);
+}
+
+.empty-history {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--color-text-muted);
+  text-align: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.empty-history i {
+  font-size: 3rem;
+}
+
+.carbon-error {
+  padding: 12px 20px;
+  color: var(--color-error);
+  background: rgba(var(--color-error-rgb), 0.08);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.history-status {
+  padding: 20px 0;
+}
+
+.delete-log-btn {
+  margin-left: 12px;
+  cursor: pointer;
+  color: var(--color-error);
+}
+
+.delete-log-btn:hover {
+  opacity: 0.75;
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .calculator-layout-grid {
+    grid-template-cols: 1fr;
+  }
+}

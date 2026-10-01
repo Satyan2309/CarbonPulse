@@ -1,0 +1,120 @@
+package com.ecotrack.controller;
+
+
+import com.ecotrack.dto.ApiResponse;
+import com.ecotrack.service.ChallengeService;
+import com.ecotrack.dto.ChallengeCompletionRequest;
+import com.ecotrack.dto.ChallengeCompletionResponse;
+import com.ecotrack.dto.ChallengeResponse;
+import com.ecotrack.dto.LeaderboardResponse;
+import com.ecotrack.dto.UpdateProgressRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/challenges")
+@RequiredArgsConstructor
+public class ChallengeController {
+
+    private final ChallengeService challengeService;
+
+    @GetMapping("/daily")
+    public ResponseEntity<ApiResponse<List<ChallengeResponse>>> getDailyChallenges() {
+        String authenticatedEmail = getAuthenticatedEmail();
+        List<ChallengeResponse> challenges = challengeService.getDailyChallenges(authenticatedEmail);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Daily challenges fetched successfully", challenges));
+    }
+
+    @GetMapping("/weekly")
+    public ResponseEntity<ApiResponse<List<ChallengeResponse>>> getWeeklyChallenges() {
+        String authenticatedEmail = getAuthenticatedEmail();
+        List<ChallengeResponse> challenges = challengeService.getWeeklyChallenges(authenticatedEmail);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Weekly challenges fetched successfully", challenges));
+    }
+
+    @PostMapping("/complete")
+    public ResponseEntity<ApiResponse<ChallengeCompletionResponse>> completeChallenge(@Valid @RequestBody ChallengeCompletionRequest request) {
+        String authenticatedEmail = getAuthenticatedEmail();
+        ChallengeCompletionResponse response = challengeService.completeChallenge(request, authenticatedEmail);
+        return new ResponseEntity<>(new ApiResponse<>(true, "Challenge completed successfully", response), HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ChallengeResponse>>> getAllChallenges() {
+        String authenticatedEmail = getAuthenticatedEmail();
+        List<ChallengeResponse> challenges = (authenticatedEmail != null && !authenticatedEmail.isEmpty() && !"anonymousUser".equals(authenticatedEmail))
+                ? challengeService.getAllActiveChallenges(authenticatedEmail)
+                : challengeService.getAllChallenges();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Challenges fetched successfully", challenges));
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<ApiResponse<List<ChallengeResponse>>> getActiveChallenges() {
+        String authenticatedEmail = getAuthenticatedEmail();
+        List<ChallengeResponse> challenges = challengeService.getActiveChallengesForUser(authenticatedEmail);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Active challenges fetched successfully", challenges));
+    }
+
+    @PostMapping("/{id}/join")
+    public ResponseEntity<ApiResponse<ChallengeResponse>> joinChallenge(@PathVariable Long id) {
+        String authenticatedEmail = getAuthenticatedEmail();
+        ChallengeResponse response = challengeService.joinChallenge(id, authenticatedEmail);
+        return new ResponseEntity<>(new ApiResponse<>(true, "Challenge joined successfully", response), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{id}/leave")
+    public ResponseEntity<ApiResponse<Void>> leaveChallenge(@PathVariable Long id) {
+        String authenticatedEmail = getAuthenticatedEmail();
+        challengeService.leaveChallenge(id, authenticatedEmail);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Left challenge successfully", null));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteOrLeaveChallenge(@PathVariable Long id) {
+        String authenticatedEmail = getAuthenticatedEmail();
+        challengeService.leaveChallenge(id, authenticatedEmail);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Left challenge successfully", null));
+    }
+
+    @PutMapping("/{id}/progress")
+    public ResponseEntity<ApiResponse<ChallengeResponse>> updateProgress(@PathVariable Long id,
+                                                                         @Valid @RequestBody UpdateProgressRequest request) {
+        String authenticatedEmail = getAuthenticatedEmail();
+        ChallengeResponse response = challengeService.updateProgress(id, authenticatedEmail, request);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Challenge progress updated successfully", response));
+    }
+
+    @GetMapping("/leaderboard")
+    public ResponseEntity<ApiResponse<List<LeaderboardResponse>>> getLeaderboard() {
+        String authenticatedEmail = getAuthenticatedEmail();
+        List<LeaderboardResponse> leaderboard = challengeService.getLeaderboard(authenticatedEmail);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Leaderboard fetched successfully", leaderboard));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ChallengeResponse>>> searchChallenges(@RequestParam("q") String query) {
+        String authenticatedEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<ChallengeResponse> results = challengeService.searchChallenges(query, authenticatedEmail);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Search results retrieved", results));
+    }
+
+    private String getAuthenticatedEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null ? authentication.getName() : null;
+    }
+}
+

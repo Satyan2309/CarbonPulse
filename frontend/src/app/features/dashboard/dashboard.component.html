@@ -1,0 +1,167 @@
+<div class="dashboard-viewport-container" @dashboardStagger>
+  <!-- Header Bar -->
+  <div class="dashboard-header-bar">
+    <div class="header-welcome">
+      <h1 class="welcome-title">Individual Dashboard</h1>
+      <p class="subtitle text-secondary" *ngIf="!isLoading && authService.userProfile()">
+        Welcome back, <span class="user-highlight">{{ authService.userProfile()?.fullName }}</span>!
+      </p>
+      <p class="subtitle text-secondary" *ngIf="isLoading">Loading real-time eco metrics...</p>
+      <p class="subtitle text-danger" *ngIf="error">{{ error }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline-light"><i class="bi bi-download"></i> Export</button>
+      <button class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Activity</button>
+    </div>
+  </div>
+
+  <!-- Main Grid Layout (Strict CSS Grid: 60% Top Row, 40% Bottom Row) -->
+  <div class="dashboard-strict-grid">
+    <!-- ================= TOP ROW (60% Height) ================= -->
+    <div class="top-row-grid">
+      <!-- Left Column (Span 4/12): 3D Eco Globe -->
+      <div class="globe-col span-4 stagger-globe">
+        <app-eco-globe></app-eco-globe>
+      </div>
+
+      <!-- Right Column (Span 8/12): 3 Main KPIs & Quick Summary -->
+      <div class="kpi-col span-8">
+        <!-- 3 Main KPI Cards Row -->
+        <div class="kpi-cards-grid">
+          <!-- KPI 1: Today's Carbon -->
+          <div class="eco-card card-kpi stagger-kpi">
+            <div class="kpi-icon-wrapper success-bg">
+              <i class="bi bi-tree-fill"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Today's Carbon</span>
+              <h2 class="kpi-value">
+                {{ dashboardData?.todayCarbon?.toFixed(1) || '0.0' }}
+                <span class="kpi-unit">kg CO₂e</span>
+              </h2>
+            </div>
+            <span class="kpi-pill success-pill">Daily</span>
+          </div>
+
+          <!-- KPI 2: Monthly Carbon -->
+          <div class="eco-card card-kpi stagger-kpi">
+            <div class="kpi-icon-wrapper danger-bg">
+              <i class="bi bi-calendar-event-fill"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Monthly Carbon</span>
+              <h2 class="kpi-value">
+                {{ dashboardData?.monthlyCarbon?.toFixed(1) || '0.0' }}
+                <span class="kpi-unit">kg CO₂e</span>
+              </h2>
+            </div>
+            <span class="kpi-pill danger-pill">Monthly</span>
+          </div>
+
+          <!-- KPI 3: Eco Score -->
+          <div class="eco-card card-kpi stagger-kpi">
+            <div class="kpi-icon-wrapper info-bg">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Eco Score</span>
+              <h2 class="kpi-value">
+                {{ dashboardData?.ecoScore || 0 }}
+                <span class="kpi-total">/ 100</span>
+              </h2>
+              <div class="kpi-progress">
+                <div class="kpi-progress-bar" [style.width.%]="dashboardData?.ecoScore || 0"></div>
+              </div>
+            </div>
+            <span class="kpi-pill info-pill">{{ dashboardData?.badgeName || 'Bronze' }}</span>
+          </div>
+        </div>
+
+        <!-- Integrated Active Goals & Summary Card -->
+        <div class="eco-card kpi-summary-card stagger-kpi">
+          <div class="summary-header">
+            <div class="summary-title-wrap">
+              <i class="bi bi-rocket-takeoff-fill text-success"></i>
+              <h3>Sustainability Performance</h3>
+            </div>
+            <span class="aggregate-badge" *ngIf="dashboardGoals.length > 0">
+              {{ aggregateGoalProgress }}% Avg Goal Progress
+            </span>
+          </div>
+          <div class="goals-mini-list" *ngIf="dashboardGoals.length > 0; else defaultTip">
+            <div class="goal-mini-item" *ngFor="let g of dashboardGoals">
+              <div class="goal-info">
+                <span class="g-title">{{ g.title }}</span>
+                <span class="g-val">{{ g.currentProgress | number:'1.1-1' }} / {{ g.targetCarbonReduction | number:'1.1-1' }} kg</span>
+              </div>
+              <div class="kpi-progress">
+                <div class="kpi-progress-bar" [style.width.%]="g.progressPercent"></div>
+              </div>
+            </div>
+          </div>
+          <ng-template #defaultTip>
+            <p class="summary-tip">
+              <i class="bi bi-lightbulb-fill text-warning"></i>
+              Your transport emissions peaked this week. Switching to public transit could save <strong>4.5 kg CO₂</strong>.
+            </p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= BOTTOM ROW (40% Height) ================= -->
+    <div class="bottom-row-grid">
+      <!-- Left Column (Span 6/12): Compact Sleek Bar Chart -->
+      <div class="chart-card-wrapper span-6 stagger-bottom">
+        <div class="eco-card bar-chart-card">
+          <div class="card-title-row">
+            <div class="title-with-icon">
+              <i class="bi bi-bar-chart-line-fill text-success"></i>
+              <h3>Carbon Emission Trends</h3>
+            </div>
+            <span class="period-badge">7-Day Bar Tracking</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas #barChartCanvas></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column (Span 6/12): Minimal Top 3 Recent Activities with Dynamic Category Styling -->
+      <div class="activities-card-wrapper span-6 stagger-bottom">
+        <div class="eco-card activities-card">
+          <div class="card-title-row">
+            <div class="title-with-icon">
+              <i class="bi bi-clock-history text-info"></i>
+              <h3>Recent Activities</h3>
+            </div>
+            <span class="minimal-badge">Top 3 Records</span>
+          </div>
+          <div class="minimal-activities-list">
+            <div class="activity-row-item" *ngFor="let act of top3Activities">
+              <div class="act-left">
+                <!-- Dynamic Category-Themed Icon Container -->
+                <div class="act-icon-box" [ngClass]="getActivityIconClass(act)">
+                  <i class="bi" [ngClass]="getActivityIcon(act)"></i>
+                </div>
+                <div class="act-meta">
+                  <span class="act-desc">{{ act.description }}</span>
+                  <span class="act-sub">{{ act.type }} &bull; {{ act.timestamp | date:'short' }}</span>
+                </div>
+              </div>
+              <div class="act-right">
+                <span class="act-impact-badge" [ngClass]="getActivityBadgeClass(act)">
+                  {{ act.impact | number:'1.1-1' }} kg
+                </span>
+              </div>
+            </div>
+            <div class="empty-act" *ngIf="!isLoading && top3Activities.length === 0">
+              <i class="bi bi-inbox"></i>
+              <p>No recent activity recorded today.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

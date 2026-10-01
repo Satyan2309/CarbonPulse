@@ -1,0 +1,78 @@
+package com.ecotrack.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "challenges")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Challenge {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false, length = 1000)
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChallengeType challengeType;
+
+    @Column(nullable = false)
+    private Integer rewardPoints;
+
+    @Column(nullable = false)
+    private String badgeName;
+
+    @Column(length = 50)
+    private String category;
+
+    @Column(name = "target_category", length = 50)
+    private String targetCategory;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    private Double targetGoal;
+
+    @Column(length = 100)
+    private String metric;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    @Builder.Default
+    @Column(length = 50)
+    private String status = "ACTIVE";
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
+}
+

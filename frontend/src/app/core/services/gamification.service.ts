@@ -1,0 +1,99 @@
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, Subject, firstValueFrom, from } from 'rxjs';
+import { ApiService } from './api.service';
+import { ApiResponse } from '../models/api-response.model';
+
+export interface EcoProfileResponse {
+  totalXp: number;
+  currentLevel: number;
+  levelName: string;
+  xpToNextLevel: number;
+  progressPercentage: number;
+  unlockedBadges: string[];
+}
+
+export interface EcoLeaderboardResponse {
+  username: string;
+  totalXp: number;
+  currentLevel: number;
+  rank: number;
+}
+
+interface EcoLeaderboardRawResponse {
+  rank: number;
+  userId: number;
+  fullName: string;
+  totalXp: number;
+  currentLevel: number;
+}
+
+export interface UserBadge {
+  id: number;
+  userId: number;
+  badgeName: string;
+  badgeType: string;
+  description: string;
+  earnedDate: string;
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class GamificationService {
+
+  private readonly api = inject(ApiService);
+  private readonly basePath = '/gamification';
+
+  private readonly profileSubject =
+    new BehaviorSubject<EcoProfileResponse | null>(null);
+
+  readonly profile$ = this.profileSubject.asObservable();
+
+  /** Emits whenever XP/level changes so other components can re-fetch. */
+  readonly profileUpdated$ = new Subject<void>();
+
+  async getProfile(): Promise<EcoProfileResponse> {
+    const response = await firstValueFrom(
+      this.api.get<ApiResponse<EcoProfileResponse>>(
+        `${this.basePath}/profile`
+      )
+    );
+    this.profileSubject.next(response.data);
+    return response.data;
+  }
+
+  async getUserBadges(userId: number): Promise<UserBadge[]> {
+    const response = await firstValueFrom(
+      this.api.get<ApiResponse<UserBadge[]>>(`/badges/user/${userId}`)
+    );
+    return response.data ?? [];
+  }
+
+  /** Fire-and-forget refresh that pushes the latest profile into profile$. */
+  refreshProfile(): void {
+    from(this.getProfile()).subscribe({
+      next: () => {},
+      error: (error) =>
+        console.error('Failed to refresh gamification profile', error),
+    });
+  }
+
+  /** Call after any XP-awarding action to notify components to refresh. */
+  notifyProfileUpdated(): void {
+    this.profileUpdated$.next();
+  }
+
+  async getLeaderboard(): Promise<EcoLeaderboardResponse[]> {
+    const response = await firstValueFrom(
+      this.api.get<ApiResponse<EcoLeaderboardRawResponse[]>>(
+        `${this.basePath}/leaderboard`
+      )
+    );
+    return (response.data ?? []).map((entry) => ({
+      rank: entry.rank,
+      username: entry.fullName,
+      totalXp: entry.totalXp,
+      currentLevel: entry.currentLevel,
+    }));
+  }
+}
